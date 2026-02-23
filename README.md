@@ -1,18 +1,25 @@
-GraphDot
-Punakha
-How to access the container, create the tunnel, and open Jupyter Notebook
-Terminal 1 (on Punakha)
-# enter punakha
-# start an interactive
+# GraphDot
+
+## Punakha Setup
+
+### How to access the container, create the tunnel, and open Jupyter Notebook
+
+---
+
+## Terminal 1 (on Punakha)
+
+```bash
+# Start an interactive GPU session
 srun -p hgx -A punakha_general --gres=gpu:1 --pty bash -i
 
-# load docker container
+# Load Docker module
 module load docker/27.3.1
 
-# go to your path where you built your header .docker/start_rootless_docker.sh
-/.docker/start_rootless_docker.sh
+# Start rootless Docker
+# (Make sure you previously configured ~/.docker/start_rootless_docker.sh)
+~/.docker/start_rootless_docker.sh
 
-# run the following script but change your path where you built you header .docker/start_rootless_docker.sh
+# Run NVIDIA PyTorch container
 docker run --rm -it \
   --gpus all \
   --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 \
@@ -22,41 +29,95 @@ docker run --rm -it \
   -v /scratch/dajuarez4:/scratch/dajuarez4 \
   -w /scratch/dajuarez4 \
   nvcr.io/nvidia/pytorch:24.12-py3 \
-  bash -lc "python -c 'import torch; print(\"cuda:\", torch.cuda.is_available()); print(\"dev:\", torch.cuda.is_available())'"
-Terminal 2 (local machine)
-# Mac users or me:
-# just run the following command
-ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password -o IdentitiesOnly=yes dajuarez4@hopper002
+  bash
+```
 
-# in that way you dont need to create a key in your local computer
-# if you dont have problems with that just run the command:
-ssh -t -t %USERNAME%@punakha.utep.edu -L 8888:localhost:8888 ssh hopper00x -L 8888:localhost:8888
+---
 
-# Note: in your local machine
-Docker rootless setup (recommended: build in /Work or /Scratch)
-# as there is not enough space in Home you can work in: /Work or /Scratch
-# so I recommend build there the following:
-mkdir -p .docker
+## Terminal 2 (Local Machine)
+
+### Option 1 — Password Login (No SSH key required)
+
+```bash
+ssh -o PubkeyAuthentication=no \
+  -o PreferredAuthentications=password \
+  -o IdentitiesOnly=yes \
+  dajuarez4@hopper002
+```
+
+---
+
+### Option 2 — SSH Tunnel Through Punakha
+
+```bash
+ssh -t -t %USERNAME%@punakha.utep.edu \
+  -L 8888:localhost:8888 \
+  ssh hopper00x -L 8888:localhost:8888
+```
+
+Then open in your browser:
+
+```
+http://localhost:8888
+```
+
+---
+
+# Docker Rootless Setup  
+(Recommended: build in `/Work` or `/Scratch`)
+
+> Home directory usually does not have enough space.
+
+```bash
+mkdir -p ~/.docker
 
 cp /etc/docker/daemon.json ~/.docker/daemon.json
 sed -i 's|"iptables": false|"iptables": true|g' ~/.docker/daemon.json
 
 cp /opt/ohpc/pub/apps/docker/start_rootless_docker.sh ~/.docker/start_rootless_docker.sh
 sed -i "s|--config-file=/etc/docker/daemon.json|--config-file=/home/$(whoami)/.docker/daemon.json|g" ~/.docker/start_rootless_docker.sh
-Create environment with Python 3.6 that has GraphDot
-conda create -n py36_env -c conda-forge python=3.6 -y
+```
 
-# conda activate py36_env
-# or not activate and run like this
+---
+
+# Create Python 3.6 Environment with GraphDot
+
+## Create environment
+
+```bash
+conda create -n py36_env -c conda-forge python=3.6 -y
+```
+
+## Install required packages
+
+```bash
 conda install -y -n py36_env -c conda-forge pycuda
 conda install -y -n py36_env -c conda-forge rdkit
+
 conda run -n py36_env python -m pip uninstall -y pytools
 conda run -n py36_env python -m pip install "pytools==2020.4.4"
+
 conda install -y -n py36_env -c conda-forge "pymatgen==2019.11.11"
 conda run -n py36_env python -m pip install --force-reinstall "ruamel.yaml==0.17.21"
 conda run -n py36_env python -m pip install -U graphdot
+```
 
-python -m pip install ipykernel
+---
+
+# Register Jupyter Kernel
+
+```bash
 conda activate py36_env
 python -m pip install ipykernel
-python -m ipykernel install --user --name py36_env --display-name "Python 3.6 (py36) with graphdot"
+python -m ipykernel install --user \
+  --name py36_env \
+  --display-name "Python 3.6 (py36) with graphdot"
+```
+
+---
+
+# Verify CUDA inside container
+
+```bash
+python -c "import torch; print('cuda:', torch.cuda.is_available())"
+```
