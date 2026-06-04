@@ -3,7 +3,7 @@
 ## Windows Setup (Anaconda)
 
 ### GraphDot Dependencies 
-First, you will need CUDA Toolkit 11.8. You can download it from https://developer.nvidia.com/cuda-11-8-0-download-archive
+First, you will need CUDA Toolkit 11.8. You can download it from https://developer.nvidia.com/cuda-11-8-0-download-archive.
 
 You will also need VS 2019 build tools. This is no longer possible to directly download from the Visual Studio website. You will need to instead download VS 2022 or a later version.
 
