@@ -12,7 +12,7 @@ You will also need VS 2019 build tools. This is no longer possible to directly d
    
 2. Click on Modify
    
-3. On the installation details, select MSVC v142 - VS 2019 C++ x64/x86 build tools (v14.29). Leave everything else the same.
+3. On the installation details, select "MSVC v142 - VS 2019 C++ x64/x86 build tools (v14.29)". Leave everything else the same.
 
 ### Anaconda Environment for Graphdot
 1. Open Anaconda Navigator
